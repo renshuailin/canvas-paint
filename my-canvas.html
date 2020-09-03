@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="cn">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./fonts/iconfont.css">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      overflow: hidden
+    }
+
+    #canvas {
+      top: 10px;
+      left: 0;
+      right: 0;
+      margin: auto;
+      background: white;
+      position: fixed;
+      display: block;
+      cursor: crosshair;
+      /* border: 1px solid #333;
+       */
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    .color {
+      position: fixed;
+      /* width: 30px; */
+      left: 50%;
+      transform: translateX(-50%);
+      top: 30px;
+      justify-items: center;
+      /* transform: translate(0, -150px) */
+    }
+
+    .color ul {
+      list-style: none;
+    }
+
+    .color ul li {
+      display: flex;
+      width: 40px;
+      height: 40px;
+      margin: 5px 5px;
+      border-radius: 50%;
+      box-sizing: border-box;
+      border: 3px solid white;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: 0.3s;
+      float: left;
+    }
+
+    .color ul li.active {
+      box-shadow: 0 0 10px #333;
+    }
+
+    /* 粗细 */
+    #range {
+      position: fixed;
+      top: 50%;
+      left: 50px;
+      width: 30px;
+      height: 150px;
+      margin-top: -75px;
+    }
+
+    #range input {
+      transform: rotate(-90deg);
+      width: 150px;
+      height: 20px;
+      margin: 0;
+      transform-origin: 75px 75px;
+      border-radius: 15px;
+      -webkit-appearance: none;
+      outline: none;
+      position: relative;
+    }
+
+    #range input::after {
+      display: block;
+      content: "";
+      width: 0;
+      height: 0;
+      border: 5px solid transparent;
+      border-right: 150px solid #333;
+      border-left-width: 0;
+      position: absolute;
+      left: 0;
+      top: 5px;
+      border-radius: 15px;
+      z-index: 0;
+    }
+
+    #range input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 20px;
+      width: 20px;
+      margin-top: -1px;
+      background: #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #333;
+      position: relative;
+      z-index: 999;
+    }
+
+    .tools {
+      position: fixed;
+      left: 0;
+      bottom: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      text-align: center
+    }
+
+    .tools button {
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      background-color: rgba(255, 255, 255, 1);
+      border: 1px solid #eee;
+      outline: none;
+      cursor: pointer;
+      box-sizing: border-box;
+      margin: 0 10px;
+      text-align: center;
+      color: #333;
+      line-height: 50px;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+
+    .tools button.active,
+    .tools button:active {
+      box-shadow: 0 0 15px red;
+      color: red;
+    }
+
+    .tools button i {
+      font-size: 24px;
+    }
+
+    @media screen and (max-width: 768px) {
+      .tools {
+        top: auto;
+        bottom: 10px;
+      }
+
+      .tools button {
+        font-size: 30px;
+        width: 60px;
+        height: 60px;
+        margin: 0 5px;
+        line-height: 50px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+
+      .tools button i {
+        font-size: 30px !important;
+      }
+
+      .tools button.active,
+      .tools button:active {
+        box-shadow: 0 0 5px red;
+      }
+
+      .tools button i {
+        font-size: 18px;
+      }
+
+      .tools #swatches {
+        display: none
+      }
+
+      .color {
+        min-width: 375px;
+        left: 0;
+        top: 20px;
+        bottom: auto;
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        transform: translate(0, 0)
+      }
+
+      .color ul {
+        padding: 0 37px;
+      }
+
+      .color ul li {
+        display: inline-block;
+        margin: 5px 5px;
+      }
+
+      .color ul li.active {
+        box-shadow: 0 0 10px black;
+      }
+
+      #range-wrap {
+        right: auto;
+        left: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas"></canvas>
+  <!-- 颜色 -->
+  <div class="color">
+    <ul>
+
+      <li id="black" class="color-item active" style="background-color: black;"></li>
+      <li id="red" class="color-item" style="background-color: #FF3333;"></li>
+      <li id="red" class="color-item" style="background-color: #FF0080	;"></li>
+      <li id="red" class="color-item" style="background-color: pink;"></li>
+      <li id="yellow" class="color-item" style="background-color: #FFFF33;"></li>
+      <li id="blue" class="color-item" style="background-color: blue;"></li>
+      <li id="blue" class="color-item" style="background-color: #0066FF;"></li>
+      <li id="blue" class="color-item" style="background-color: #97CBFF;"></li>
+      <li id="blue" class="color-item" style="background-color: #00FFFF;"></li>
+      <li id="green" class="color-item" style="background-color: #007500;"></li>
+      <li id="green" class="color-item" style="background-color: #33CC66;"></li>
+      <li id="gray" class="color-item" style="background-color: gray;"></li>
+    </ul>
+  </div>
+  <!-- 画笔粗细 -->
+  <div id="range"><input type="range" id="ran" min="1" max="30" value="5" title="画笔粗细"></div>
+  <!-- 底部功能 -->
+  <div class="tools">
+    <button id="brush" class="active" title="画笔"><i class="iconfont ">&#xe601;</i></button>
+    <button id="eraser" title="橡皮擦"><i class="iconfont ">&#xe6b8;</i></button>
+    <button id="clear" title="清空"><i class="iconfont ">&#xe630;</i></button>
+    <button id="undo" title="撤销"><i class="iconfont ">&#xe7a2;</i></button>
+    <button id="save" title="保存"><i class="iconfont ">&#xe6c4;</i></button>
+  </div>
+  <script>
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+    // 获取颜色按钮
+    let ColorBtn = document.getElementsByClassName("color-item");
+    // 清空画布
+    let clear = document.getElementById("clear");
+    //橡皮擦
+    let eraser = document.getElementById("eraser");
+    //画笔
+    let brush = document.getElementById("brush");
+    //线宽
+    let range = document.getElementById("ran");
+    // 保存
+    let save = document.getElementById("save");
+    let undo = document.getElementById("undo");
+
+    // 初始线宽
+    let lineWidth = 5
+
+
+    autoSetSize(canvas)
+    draw()
+
+    function autoSetSize(canvas) {
+      canvasSetSize();
+
+      function canvasSetSize() {
+        let pageWidth = document.documentElement.clientWidth - 50;
+        let pageHeight = document.documentElement.clientHeight - 100;
+
+        canvas.width = pageWidth;
+        canvas.height = pageHeight;
+        console.log(pageWidth, pageHeight);
+      }
+      //当窗口改变 重新赋值宽高
+      window.onresize = function () {
+        canvasSetSize();
+      }
+    }
+    // 开始绘制
+    function draw() {
+      // 处理移动端
+      if (document.body.ontouchstart !== undefined) {
+        // console.log('123123');
+
+        function move(e) {
+          let x2 = e.touches[0].clientX - canvas.offsetLeft
+          let y2 = e.touches[0].clientY - canvas.offsetTop
+          ctx.lineTo(x2, y2)
+          ctx.lineWidth = lineWidth
+          ctx.stroke()
+        }
+        canvas.addEventListener('touchstart', (e) => {
+          this.firstDot = ctx.getImageData(0, 0, canvas.width, canvas.height);//在这里储存绘图表面
+          saveData(this.firstDot);
+          e = e || window.event
+          let x1 = e.touches[0].clientX - canvas.offsetLeft
+          let y1 = e.touches[0].clientY - canvas.offsetTop
+          ctx.beginPath()
+          ctx.moveTo(x1, y1)
+
+          canvas.addEventListener('touchmove', move)
+        })
+        document.addEventListener('touchend', (e) => {
+          canvas.removeEventListener('touchmove', move)
+        })
+      } else {
+        function move(e) {
+          let x2 = e.clientX - canvas.offsetLeft
+          let y2 = e.clientY - canvas.offsetTop
+          ctx.lineTo(x2, y2)
+          ctx.lineWidth = lineWidth
+          ctx.stroke()
+        }
+        canvas.addEventListener('mousedown', (e) => {
+          this.firstDot = ctx.getImageData(0, 0, canvas.width, canvas.height);//在这里储存绘图表面
+          saveData(this.firstDot);
+          e = e || window.event
+          let x1 = e.clientX - canvas.offsetLeft
+          let y1 = e.clientY - canvas.offsetTop
+          ctx.beginPath()
+          ctx.moveTo(x1, y1)
+
+          canvas.addEventListener('mousemove', move)
+        })
+        document.addEventListener('mouseup', (e) => {
+          canvas.removeEventListener('mousemove', move)
+        })
+      }
+    }
+
+    // 颜色选项卡
+    getColor()
+    function getColor() {
+      for (let i = 0; i < ColorBtn.length; i++) {
+        ColorBtn[i].onclick = function () {
+          for (let i = 0; i < ColorBtn.length; i++) {
+            ColorBtn[i].classList.remove("active");
+            this.classList.add("active");
+            //颜色赋值
+            activeColor = this.style.backgroundColor;
+            ctx.fillStyle = activeColor;
+            ctx.strokeStyle = activeColor;
+            // draw()
+          }
+        }
+      }
+    }
+
+
+    // 清空画布
+    clear.onclick = function () {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // setCanvasBg('white');
+      // getColor()
+    };
+    //橡皮擦
+    eraser.onclick = function () {
+      // ex = true
+      ctx.globalCompositeOperation = "destination-out";
+      draw()
+
+      this.classList.add("active");
+      brush.classList.remove("active");
+    };
+    // 画笔
+    brush.onclick = function () {
+      // 恢复默认
+      ctx.globalCompositeOperation = "source-over";
+      draw()
+      this.classList.add("active");
+      eraser.classList.remove("active");
+    };
+    //监听滑动块
+    range.onchange = function () {
+      lineWidth = this.value;
+      console.log(this.value);
+    };
+    // 保存
+    save.onclick = function () {
+      let imgUrl = canvas.toDataURL("image/png");
+      let saveA = document.createElement("a");
+      document.body.appendChild(saveA);
+      saveA.href = imgUrl;
+      saveA.download = "laofuzi" + (new Date).getTime();
+      saveA.target = "_blank";
+      saveA.click();
+    };
+    //撤销
+    let history = [];
+
+    function saveData(data) {
+
+      (history.length === 20) && (history.shift());// 
+      history.push(data);
+    }
+
+    undo.onclick = function () {
+      if (history.length < 1) return false; //小于一步直接返回
+      ctx.putImageData(history[history.length - 1], 0, 0);
+      history.pop()
+    };
+
+
+  </script>
+</body>
+
+</html>
